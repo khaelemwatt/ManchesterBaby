@@ -3,12 +3,12 @@
 #include "header.h"
 
 //Initial global declarations
-int accumulator[MEMSIZE];
-int controlInstruction[MEMSIZE];
-int presentInstruction[MEMSIZE];
-int store[MEMSIZE][ADDRESSSIZE];
-int addressBus[MEMSIZE];
-int controlBus[MEMSIZE]
+char accumulator[MEMSIZE];
+char controlInstruction[MEMSIZE];
+char presentInstruction[MEMSIZE];
+char store[MEMSIZE][ADDRESSSIZE];
+char addressBus[MEMSIZE];
+char controlBus[MEMSIZE]
 
 void incrementCI(){
 	//Increment the control instruction by 1
@@ -37,4 +37,6 @@ int main(){ //Main loop for the fetch execute cycle
 	decode();
 	execute();
 	display();
+
+
 }
