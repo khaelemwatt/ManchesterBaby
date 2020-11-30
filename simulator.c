@@ -8,7 +8,7 @@ char controlInstruction[MEMSIZE];
 char presentInstruction[MEMSIZE];
 char store[MEMSIZE][ADDRESSSIZE];
 char addressBus[MEMSIZE];
-char controlBus[MEMSIZE]
+char controlBus[MEMSIZE];
 
 void incrementCI(){
 	//Increment the control instruction by 1
