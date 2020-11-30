@@ -3,6 +3,23 @@
 
 // ### DATA STRUCTURES ### 
 #define MEMSIZE 32
-#define ADDRESSSIZE 32
+#define NUMBEROFADDRESSES 32
+#define ADDRESSBUSSIZE 5
+#define CONTROLBUSSIZE 3
+
+typedef struct baby {
+	char accumulator[MEMSIZE];
+	char controlInstruction[MEMSIZE];
+	char presentInstruction[MEMSIZE];
+	char store[NUMBEROFADDRESSES][MEMSIZE];
+	char addressBus[ADDRESSBUSSIZE];
+	char controlBus[CONTROLBUSSIZE];
+}Baby;
+
+void incrementCI(Baby* baby);
+void fetch();
+void decode();
+void execute();
+void displayBaby();
 
 #endif
