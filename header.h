@@ -16,7 +16,11 @@ typedef struct baby {
 	char controlBus[CONTROLBUSSIZE];
 }Baby;
 
-void incrementCI(Baby* baby);
+Baby* createBaby();
+int binToDec(char bin[], int length);
+void decToBin(int dec, char bin[]);
+void printBin(char bin[], int length);
+void incrementCI();
 void fetch();
 void decode();
 void execute();
