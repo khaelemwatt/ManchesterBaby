@@ -32,9 +32,8 @@ Baby* createBaby(){
     return pBaby;
 }
 
-int binToDec(char bin[]){
+int binToDec(char bin[], int length){
 	//Takes an array of chars (binary string) and returns the decimal value
-	int length = strlen(bin);
 	int decimal = 0;
 	for(int i=0; i<length; i++){
 		if(bin[i]=='1'){
@@ -59,9 +58,8 @@ void decToBin(int dec, char bin[]){
 	}
 }
 
-void printBin(char bin[]){
+void printBin(char bin[], int length){
 	//For easy printing of binary numbers (mostly for debugging purposes)
-	int length = strlen(bin);
     for(int i=0; i<length; i++){
 		printf("%c", bin[i]);
 	}
@@ -69,7 +67,7 @@ void printBin(char bin[]){
 }
 
 void incrementCI(Baby* baby){
-	int count = binToDec(baby->controlInstruction);
+	int count = binToDec(baby->controlInstruction, MEMSIZE);
 	count += 1;
 	decToBin(count, baby->controlInstruction);
 
@@ -96,10 +94,19 @@ int main(){ //Main loop for the fetch decode execute cycle
     Baby* baby = NULL;
     baby = createBaby();
 
+    printBin(baby->controlInstruction, MEMSIZE);
+    printf("%d\n", binToDec(baby->controlInstruction, MEMSIZE));
+
 	incrementCI(baby);
-	fetch();
-	decode();
-	execute();
-	displayBaby();
+
+	printf("Control Instruction incremented\n");
+	printBin(baby->controlInstruction, MEMSIZE);
+    printf("%d\n", binToDec(baby->controlInstruction, MEMSIZE));
+
+
+	fetch(baby);
+	decode(baby);
+	execute(baby);
+	displayBaby(baby);
 
 }
