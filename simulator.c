@@ -73,8 +73,134 @@ void incrementCI(Baby* baby){
 
 }
 
-void fetch(){
-	//Get the instruction from the data store
+//counts the nu,ber of lines in a file
+int countRows(char filename[]){
+  
+    int rows =0;
+    char ch;
+    char last;
+
+    FILE *fp;
+    fp = fopen(filename, "r");
+
+    if (fp != NULL){
+
+        //Add initial line
+        rows++;
+        
+        while ((ch = fgetc(fp)) != EOF)
+        {
+            /* Check new line */
+            if (ch == '\n' || ch == '\0')
+                rows++;
+            last = ch;
+        }
+
+        if(last=='\n')
+            rows--;
+
+        fclose(fp);
+    }
+    return rows;
+
+}
+
+//count the number of chars in a file
+int countChars(char filename[]){
+    int chars =0;
+    char ch;
+
+    FILE *fp;
+    fp = fopen(filename, "r");
+
+    if (fp != NULL){
+        while ((ch = fgetc(fp)) != EOF)
+        {
+           if (ch != '\n' ){
+                chars++;
+           }
+        }
+        fclose(fp);  
+    }
+    return chars;
+
+}
+
+Baby* loadStore(){
+
+	char filename[] ="BabyTestMC.txt";
+
+    FILE *fp;
+    fp = fopen(filename, "r");
+
+    if(!fp){
+        printf("File %s does not exist or you dont have access permissions\n", filename);
+        return NULL;
+    }
+    fclose(fp);
+
+    Baby* pBaby = createBaby();
+
+    int rows = countRows(filename);
+    int numChars = countChars(filename);
+    int columns;
+
+    if(rows%numChars!=0){
+        columns = numChars/rows;
+    }else{
+        printf("Invalid file format. Please have equal column size for each row\n");
+        return NULL;
+    }
+
+    if(columns != NUMBEROFADDRESSES){
+        printf("Invalid file format. Lines must be %d bits \n", NUMBEROFADDRESSES);
+    }
+    if(rows > MEMSIZE){
+        printf("Invalid file format. Maximum of %d lines", MEMSIZE);
+    }
+
+    fp = fopen(filename, "r");
+
+    if (fp != NULL){
+        
+        
+        char line[NUMBEROFADDRESSES];
+        int i =0;
+
+            while (fgets(line, 60, fp) != NULL){
+
+                for (int j=0; j<NUMBEROFADDRESSES; j++){
+                
+                    pBaby->store[i][j] = line[j];
+                }
+            i++;
+            if (i==(rows)){
+            	break;
+            }
+            }
+        
+        fclose(fp);
+        
+    }else{
+        printf("File %s not found!\n", filename );
+    }
+    
+    return pBaby;
+
+}
+
+
+
+Baby* fetch(Baby* pBaby){
+	//CI tells you the line in store to fetch
+	//copy this line in store into the PI
+	int line = binToDec(pBaby->controlInstruction, MEMSIZE);
+	line --;
+	for (int i = 0; i < NUMBEROFADDRESSES; i++) {
+		pBaby->presentInstruction[i] = pBaby->store[line][i];
+	}	
+	return pBaby;
+
 }
 
 void decode(){
