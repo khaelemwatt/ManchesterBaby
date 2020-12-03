@@ -3,20 +3,31 @@
  
 int main()
 {
-   char ch;
    FILE *fp;
-   char line[32];
-   //printf("Enter the name of file:: ");
-   //gets(file_name);
+   char line[256];
    fp = fopen("BabyTestAssembler.txt","r");
    if( fp == NULL ){
         printf("\nCan not open the file.");
         exit(0);
    }
    printf("\nThe contents of %s file is :\n", "BabyTestAssembler.txt");
-   while(fgets(line, 32, fp) != NULL){
-       if ()
-       printf("%s", line);
+
+    while(fgets(line, 256, fp) != NULL){
+        char command[30];
+        int index = 0;
+        char ch = line[index];
+
+       
+        while (line[index]){
+            if (line[index] == ';'){
+                break;
+            }
+            else{
+                printf("%c", line[index]);
+            }
+            index ++;
+        }
+        printf("\n");
    }
       
    fclose(fp);
