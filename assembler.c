@@ -1,18 +1,84 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
- 
+#include <ctype.h>
+
+// global variables:
+char variables[16][16];   // this is a 2D array which contains all the variables referenced throughout the file
+                          // you may want to use a different approach but this is what I tried
+
+char machineCode[32][32]; // this is the 2D array which will be exported to the external file
+int variableNum = 0;    // this is the number which 
+int lineNumber = 0; // the current useable line of the assembly language
+
+
 /**
+assembler.c
+
+This file takes in the assembly code language from an external file and converts it to machine code
+
+So far: it can convert most of the necessary code to machine code.
+
+To do:  *get the program to be able to detect the variables at the bottom of the assembly language 
+        and assign the line number of the variables to the start of the lines which make use of them
+
+        *export the machine code to an external file.
+
+        *allow the user to manually enter the name of the assembly language text file
+
+        *input validation
+**/
+
+
+/**
+checkFirst(char first[])
+parameters:
+first[]: first is the first command on the line in the assembly code.
+
+this function checks the first command on the line in the assembly code and
+uses it to see if it's useful. the only useful first commands will be the variables
+which are stated at the end of the code.
+
+**/
+
 int checkFirst(char first[]){
 
-    printf("%s", first);
-    if (first[0] == 'S'){
-        printf("start!");
+}
+
+/**
+initialiseMC()
+
+this function makes the machine code 2D array full of zeroes initially
+
+**/
+int initialiseMC(){
+
+    for (int i = 0; i < 32; i++){
+        for (int j = 0; j < 32; j++){
+
+            machineCode[i][j] = '0';
+        }
     }
     return 0;
 }
-**/
 
+/**
+printMC(int lines)
+parameters:
+lines: the number of lines of the machine code you wish to print.
+
+this function prints the machine code 2D array
+
+**/
+int printMC(int lines){
+    for (int i = 0; i < lines; i++){
+        for (int j = 0; j < 32; j++){
+            printf("%c",machineCode[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
 
 /**
 convertFunc(char function[])
@@ -26,47 +92,51 @@ binary number for outputting to file.
 int convertFunc(char function[]){
     char funcBinary[4];
     if (strcmp("JMP", function) == 0){
-        strcpy(funcBinary, "000");
-        printf("%s", funcBinary);
+        machineCode[lineNumber][13] = '0';
+        machineCode[lineNumber][14] = '0';
+        machineCode[lineNumber][15] = '0';
     }
     else if (strcmp("JRP", function) == 0){
-        strcpy(funcBinary, "100");
-        printf("%s", funcBinary);
+        machineCode[lineNumber][13] = '1';
+        machineCode[lineNumber][14] = '0';
+        machineCode[lineNumber][15] = '0';
     }
     else if (strcmp("LDN", function) == 0){
-        strcpy(funcBinary, "010");
-        printf("%s", funcBinary);
+        machineCode[lineNumber][13] = '0';
+        machineCode[lineNumber][14] = '1';
+        machineCode[lineNumber][15] = '0';
     }
     else if (strcmp("STO", function) == 0){
-        strcpy(funcBinary, "110");
-        printf("%s", funcBinary);
+        machineCode[lineNumber][13] = '1';
+        machineCode[lineNumber][14] = '1';
+        machineCode[lineNumber][15] = '0';
     }
     else if (strcmp("SUB", function) == 0){
-        strcpy(funcBinary, "001");
-        printf("%s", funcBinary);
+        machineCode[lineNumber][13] = '0';
+        machineCode[lineNumber][14] = '0';
+        machineCode[lineNumber][15] = '1';
     }
     else if (strcmp("CMP", function) == 0){
-        strcpy(funcBinary, "011");
-        printf("%s", funcBinary);
+        machineCode[lineNumber][13] = '0';
+        machineCode[lineNumber][14] = '1';
+        machineCode[lineNumber][15] = '1';
     }
     else if (strcmp("STP", function) == 0){
-        strcpy(funcBinary, "111");
-        printf("%s", funcBinary);
+        machineCode[lineNumber][13] = '1';
+        machineCode[lineNumber][14] = '1';
+        machineCode[lineNumber][15] = '1';
     }
     else if (strcmp("VAR", function) == 0){
-        printf("thats a var!");
+        machineCode[lineNumber][13] = '0';
+        machineCode[lineNumber][14] = '0';
+        machineCode[lineNumber][15] = '0';
     }
     else{
         printf("UNKNOWN FUNCTION ENTERED!");
     }
 }
 
-
-int checkOperand(char operand[]){
-
-}
-
-/**convertFunc(int num)
+/**convertInt(int num)
 parameters:
 num: the number that needs to be converted to binary
 
@@ -74,8 +144,8 @@ this function takes in a number and converts it to binary in reverse for
 outputting to the machine code file, as this requires binary to be in reverse
 order.
 **/
-int convertInt(int num){
-    char binaryNum[13];
+char * convertInt(int num){
+    char * binaryNum = malloc(sizeof(13));
     int subtraction = 4096;
     int index = 12;
     while (index >= 0){
@@ -89,9 +159,47 @@ int convertInt(int num){
             subtraction = subtraction/2;
             index --;
     }
-    printf("%s", binaryNum);
-    return 0;
+    return binaryNum;
 }
+
+/**
+checkOperand(char operand[])
+parameters:
+operand[]: operand is the command on the line which the function is being performed on.
+
+this function checks the operand to see if it is a variable or a number. if it is a number
+it converts it to binary and adds it to the machine code array. This function returns 1 if the
+operand is a variable.
+
+**/
+int checkOperand(char operand[]){
+    int isVariable = 0;
+    for (int i = 0; i < strlen(operand); i++){
+        if (isalpha(operand[i])) {
+            isVariable = 1;
+            break;
+        } 
+    }
+    if (isVariable == 1){
+        for (int r = 0; r < strlen(operand); r++){
+            variables[variableNum][r] = operand[r];
+        }
+        variableNum ++;
+        return 1;
+    }
+    else{
+        int decimal;
+        sscanf(operand, "%d", &decimal);
+        char * binaryNum = convertInt(decimal);
+        for (int i = 0; i < 13; i++){
+           machineCode[lineNumber][i] = binaryNum[i];
+        }
+        return 0;
+    }
+
+}
+
+
 
 /**checkCommand(char command[])
 parameters:
@@ -120,7 +228,7 @@ int checkCommand(char command[])
         r++;
     }
 
-   printf("%s", function);
+   //printf("%s", function);
 
     r = 14;
     i = 0;
@@ -130,27 +238,27 @@ int checkCommand(char command[])
         r++;
     }
     //printf("%s", operand);
-    //convertFunc(function);
+    
+    checkOperand(operand);
+
+    convertFunc(function);
     //checkFirst(first);
     return 0;
 
 }
 
-
-
-
-
-
+// main
 int main()
 {
    FILE *fp;
    char line[256];
+   initialiseMC();
+   printMC(16);
    fp = fopen("BabyTestAssembler.txt","r");
    if( fp == NULL ){
         printf("\nCan not open the file.");
         exit(0);
    }
-   printf("\nThe contents of %s file is :\n", "BabyTestAssembler.txt");
 
     while(fgets(line, 256, fp) != NULL){
         char command[30];
@@ -172,12 +280,18 @@ int main()
         }
         if (validLine == 1){
             checkCommand(command);
-            printf("\n");
+            //printf(" %d \n", lineNumber);
+            lineNumber ++;
         }
         
    }
-      
+    for (int i = 0; i < 16; i++) {
+        for (int j = 0; j < 16; j++) {
+           // printf("%c", variables[i][j]);
+        }
+        //printf("\n");
+    }
    fclose(fp);
- 
+    printMC(lineNumber);
    return 0;
 }
