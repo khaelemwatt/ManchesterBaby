@@ -31,6 +31,12 @@ To do:  *get the program to be able to detect the variables at the bottom of the
         *input validation
 **/
 
+/**
+ * Function to check if the smbol exists within the symbol table
+ * if it does exist it returns a pointer to the symbol
+ * if id does not exist it returns null
+ * 
+ * */
 Symbol* symbolExists(char* symbol)
 {
     if (!head)
@@ -48,27 +54,34 @@ Symbol* symbolExists(char* symbol)
     return NULL;
 }
 
-void addSymbol(char symbol[50], int lineNum)
+char* stripWhiteSpace(char *s)
 {
-    Symbol *s;
+    for (int i=0; i<strlen(s); i++)
+    {
+        if (s[i] == ' ')
+            s[i] = 0;
+    }
+    
+    return s;
+}
+
+/**
+ * function to add a line to the symbol table 
+ * if the symbol does not exist it also creates the symbol
+ * 
+ * */
+void addLine(char* symbol, int lineNum)
+{
+    Symbol *s; 
     Line *l;
     
+    symbol = stripWhiteSpace(symbol);
+
+    //initialise line struct
     l = (Line*)malloc(sizeof(Line));
     l->lineNum = lineNum;
 
-    if (!head)
-    {
-        s = (Symbol*)malloc(sizeof(Symbol));
-        
-        s->line = l;
-        
-        strncpy(s->name, symbol, 50);
-        
-        head = s;
-
-        return;
-    }
-
+    //check if symbol exists 
     s = symbolExists(symbol);
 
     if (!s)
@@ -82,6 +95,14 @@ void addSymbol(char symbol[50], int lineNum)
         s->line = l;
     
     strncpy(s->name, symbol, 50);
+
+    if (head && s != head)
+    {
+        s->next = head;
+        head = s;
+    } else if (!head)
+        head = s;
+    
 }
 
 /**
@@ -228,7 +249,7 @@ it converts it to binary and adds it to the machine code array. This function re
 operand is a variable.
 
 **/
-int checkOperand(char operand[]){
+int checkOperand(char operand[], int lineNumber){
     int isVariable = 0;
     for (int i = 0; i < strlen(operand); i++){
         if (isalpha(operand[i])) {
@@ -237,11 +258,13 @@ int checkOperand(char operand[]){
         } 
     }
     if (isVariable == 1){
-        for (int r = 0; r < strlen(operand); r++){
-            //variables[variableNum][r] = operand[r];
-            addSymbol(operand, 0);
-        }
-        variableNum ++;
+        // for (int r = 0; r < strlen(operand); r++){
+        //     //variables[variableNum][r] = operand[r];
+        //     addLine(operand, 0);
+        // }
+        //variableNum ++;
+        addLine(operand, lineNumber);
+
         return 1;
     }
     else{
@@ -265,7 +288,7 @@ command[]: the line of useable code taken from the assembly file
 this function takes a useable line of code from the assembly file
 and breaks it up into the appropriate sections for use.
 **/
-int checkCommand(char command[])  
+int checkCommand(char command[], int lineNumber)  
 {
     char first[32];
     char operand[8];
@@ -296,7 +319,7 @@ int checkCommand(char command[])
     }
     //printf("%s", operand);
     
-    checkOperand(operand);
+    checkOperand(operand, lineNumber);
 
     convertFunc(function);
     //checkFirst(first);
@@ -337,21 +360,31 @@ int main()
             index ++;
         }
         if (validLine == 1){
-            checkCommand(command);
+            checkCommand(command, lineNumber);
             //printf(" %d \n", lineNumber);
             lineNumber ++;
         }
         
    }
-    // for (int i = 0; i < 16; i++) {
-    //     for (int j = 0; j < 16; j++) {
-    //        printf("%s", variables[i][j]);
-    //     }
-    //     printf("\n");
-    // }
+    
+    Symbol *current = head;
+    while (current)
+    {
+        printf("\n-----------%s----------\n", current->name);
 
-   fclose(fp);
-    printMC(lineNumber);
+        Line *line = current->line;
+        while (line)
+        {
+            printf("- %d\n", line->lineNum);
+
+            line = line->next;
+        }
+
+        current = current->next;
+    }
+
+    fclose(fp);
+   //printMC(lineNumber);
 
    return 0;
 }
