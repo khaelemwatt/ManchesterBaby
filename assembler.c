@@ -40,26 +40,31 @@ Symbol* symbolExists(char* symbol)
     while (current)
     {
         if (strncmp(symbol, current->name, 50) == 0)
-        {
-            //printf("%s %s", symbol, " exists!");
             return current;
-        }
+        
         current = current->next;
     }
 
     return NULL;
 }
 
-void addSymbol(char* symbol, int lineNum)
+void addSymbol(char symbol[50], int lineNum)
 {
     Symbol *s;
+    Line *l;
+    
+    l = (Line*)malloc(sizeof(Line));
+    l->lineNum = lineNum;
 
     if (!head)
     {
         s = (Symbol*)malloc(sizeof(Symbol));
-        Line *l = (Line*)malloc(sizeof(Line));
-
+        
         s->line = l;
+        
+        strncpy(s->name, symbol, 50);
+        
+        head = s;
 
         return;
     }
@@ -69,13 +74,14 @@ void addSymbol(char* symbol, int lineNum)
     if (!s)
         s = (Symbol*)malloc(sizeof(Symbol));
     
-    Line *l = (Line*)malloc(sizeof(Line));
     if (s->line)
     {
         l->next = s->line;
         s->line = l;
     } else
         s->line = l;
+    
+    strncpy(s->name, symbol, 50);
 }
 
 /**
