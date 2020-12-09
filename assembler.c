@@ -5,7 +5,7 @@
 #include "assembler.h"
 
 // global variables:
-char variables[16][16];   // this is a 2D array which contains all the variables referenced throughout the file
+//char variables[16][16];   // this is a 2D array which contains all the variables referenced throughout the file
                           // you may want to use a different approach but this is what I tried
 
 char machineCode[32][32]; // this is the 2D array which will be exported to the external file
@@ -33,21 +33,38 @@ To do:  *get the program to be able to detect the variables at the bottom of the
 
 Symbol* symbolExists(char* symbol)
 {
+    if (!head)
+        return NULL;
+
     Symbol *current = head;
     while (current)
     {
         if (strncmp(symbol, current->name, 50) == 0)
+        {
+            //printf("%s %s", symbol, " exists!");
             return current;
-        
+        }
         current = current->next;
     }
 
     return NULL;
 }
 
-int addSymbol(char* symbol, int lineNum)
+void addSymbol(char* symbol, int lineNum)
 {
-    Symbol *s = symbolExists(symbol);
+    Symbol *s;
+
+    if (!head)
+    {
+        s = (Symbol*)malloc(sizeof(Symbol));
+        Line *l = (Line*)malloc(sizeof(Line));
+
+        s->line = l;
+
+        return;
+    }
+
+    s = symbolExists(symbol);
 
     if (!s)
         s = (Symbol*)malloc(sizeof(Symbol));
@@ -59,16 +76,6 @@ int addSymbol(char* symbol, int lineNum)
         s->line = l;
     } else
         s->line = l;
-}
-
-int initialiseST()
-{
-    head = (Symbol*)malloc(sizeof(Symbol));
-
-    if (head)
-        return 1;
-    else
-        return 0;
 }
 
 /**
@@ -225,7 +232,8 @@ int checkOperand(char operand[]){
     }
     if (isVariable == 1){
         for (int r = 0; r < strlen(operand); r++){
-            variables[variableNum][r] = operand[r];
+            //variables[variableNum][r] = operand[r];
+            addSymbol(operand, 0);
         }
         variableNum ++;
         return 1;
@@ -296,8 +304,6 @@ int main()
     FILE *fp;
     char line[256];
     initialiseMC();
-
-    initialiseST();
 
  //  printMC(16);
     fp = fopen("BabyTestAssembler.txt","r");
