@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "assembler.h"
 
 // global variables:
 char variables[16][16];   // this is a 2D array which contains all the variables referenced throughout the file
@@ -11,6 +12,7 @@ char machineCode[32][32]; // this is the 2D array which will be exported to the 
 int variableNum = 0;    // this is the number which 
 int lineNumber = 0; // the current useable line of the assembly language
 
+Symbol *head; //head of symbol table 
 
 /**
 assembler.c
@@ -29,6 +31,45 @@ To do:  *get the program to be able to detect the variables at the bottom of the
         *input validation
 **/
 
+Symbol* symbolExists(char* symbol)
+{
+    Symbol *current = head;
+    while (current)
+    {
+        if (strncmp(symbol, current->name, 50) == 0)
+            return current;
+        
+        current = current->next;
+    }
+
+    return NULL;
+}
+
+int addSymbol(char* symbol, int lineNum)
+{
+    Symbol *s = symbolExists(symbol);
+
+    if (!s)
+        s = (Symbol*)malloc(sizeof(Symbol));
+    
+    Line *l = (Line*)malloc(sizeof(Line));
+    if (s->line)
+    {
+        l->next = s->line;
+        s->line = l;
+    } else
+        s->line = l;
+}
+
+int initialiseST()
+{
+    head = (Symbol*)malloc(sizeof(Symbol));
+
+    if (head)
+        return 1;
+    else
+        return 0;
+}
 
 /**
 checkFirst(char first[])
@@ -130,6 +171,8 @@ int convertFunc(char function[]){
         machineCode[lineNumber][13] = '0';
         machineCode[lineNumber][14] = '0';
         machineCode[lineNumber][15] = '0';
+
+        
     }
     else{
         printf("UNKNOWN FUNCTION ENTERED!");
@@ -250,15 +293,18 @@ int checkCommand(char command[])
 // main
 int main()
 {
-   FILE *fp;
-   char line[256];
-   initialiseMC();
-   printMC(16);
-   fp = fopen("BabyTestAssembler.txt","r");
-   if( fp == NULL ){
+    FILE *fp;
+    char line[256];
+    initialiseMC();
+
+    initialiseST();
+
+ //  printMC(16);
+    fp = fopen("BabyTestAssembler.txt","r");
+    if( fp == NULL ){
         printf("\nCan not open the file.");
         exit(0);
-   }
+    }
 
     while(fgets(line, 256, fp) != NULL){
         char command[30];
@@ -285,13 +331,15 @@ int main()
         }
         
    }
-    for (int i = 0; i < 16; i++) {
-        for (int j = 0; j < 16; j++) {
-           // printf("%c", variables[i][j]);
-        }
-        //printf("\n");
-    }
+    // for (int i = 0; i < 16; i++) {
+    //     for (int j = 0; j < 16; j++) {
+    //        printf("%s", variables[i][j]);
+    //     }
+    //     printf("\n");
+    // }
+
    fclose(fp);
     printMC(lineNumber);
+
    return 0;
 }
