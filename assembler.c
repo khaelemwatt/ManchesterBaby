@@ -78,7 +78,9 @@ void addLine(char* symbol, int lineNum)
 {
     Symbol *s; 
     Line *l;
-    
+
+    int exists = 1;
+
     symbol = stripWhiteSpace(symbol);
 
     //initialise line struct
@@ -90,8 +92,11 @@ void addLine(char* symbol, int lineNum)
 
     //if symbol doesnt exist, initialise a new sybol
     if (!s)
+    {   
+        exists = 0;
         s = (Symbol*)malloc(sizeof(Symbol));
-    
+    }
+
     //if symbol already contains a line 
     if (s->line)
     {
@@ -127,6 +132,8 @@ int checkFirst(char first[], int lineNumber){
 
     if (ptr)
     {
+        int exists = 1;
+
         int i=0;
         char currChar = first[0];
 
@@ -143,6 +150,28 @@ int checkFirst(char first[], int lineNumber){
         varName[i] = 0;
 
         printf("%s\n", varName);
+
+        Symbol *s;
+
+        s = symbolExists(varName);
+
+        if (!s)
+        {   
+            exists = 0;
+            s = (Symbol*)malloc(sizeof(Symbol));
+        }
+
+        s->declaration = lineNumber;
+
+        strncpy(s->name, varName, 50);
+
+        if (head && s != head && exists == 0)
+        {
+            s->next = head;
+            head = s;
+        } else if (!head)
+            head = s;
+    
     }
 }
 
@@ -357,9 +386,9 @@ int checkCommand(char command[], int lineNumber)
     checkOperand(operand, lineNumber);
 
     convertFunc(function);
-    //checkFirst(first);
+   
 
-    printf("%s", first);
+   
 
     return 0;
 
@@ -417,6 +446,8 @@ int main()
 
             line = line->next;
         }
+
+        printf("%s %d", "declared on line :", current->declaration);
 
         current = current->next;
     }
