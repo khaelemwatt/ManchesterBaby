@@ -122,8 +122,28 @@ which are stated at the end of the code.
 
 **/
 
-int checkFirst(char first[]){
-    printf("%s \n", first);
+int checkFirst(char first[], int lineNumber){
+    char *ptr = strstr(first, "VAR");
+
+    if (ptr)
+    {
+        int i=0;
+        char currChar = first[0];
+
+        while (currChar != ':')
+        {
+            i++;
+            currChar = first[i];
+        }
+        char varName[i+1];
+
+        for (int z=0; z<i; z++)
+            varName[z] = first[z];
+
+        varName[i] = 0;
+
+        printf("%s\n", varName);
+    }
 }
 
 /**
@@ -313,7 +333,7 @@ int checkCommand(char command[], int lineNumber)
     }
     
     if (useful == 1)
-        checkFirst(first);
+        checkFirst(first, lineNumber);
     
     int r = 10;
     i = 0;
