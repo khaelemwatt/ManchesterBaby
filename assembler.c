@@ -54,6 +54,10 @@ Symbol* symbolExists(char* symbol)
     return NULL;
 }
 
+/**
+ * strips a string of all white space characters
+ * */
+
 char* stripWhiteSpace(char *s)
 {
     for (int i=0; i<strlen(s); i++)
@@ -84,9 +88,11 @@ void addLine(char* symbol, int lineNum)
     //check if symbol exists 
     s = symbolExists(symbol);
 
+    //if symbol doesnt exist, initialise a new sybol
     if (!s)
         s = (Symbol*)malloc(sizeof(Symbol));
     
+    //if symbol already contains a line 
     if (s->line)
     {
         l->next = s->line;
@@ -117,7 +123,7 @@ which are stated at the end of the code.
 **/
 
 int checkFirst(char first[]){
-
+    printf("%s \n", first);
 }
 
 /**
@@ -294,11 +300,20 @@ int checkCommand(char command[], int lineNumber)
     char operand[8];
     char function[32];
 
+    int useful = 0;
+
     int i = 0;      
-    while(i < 6){
+    while(i < 32){
         first[i] = command[i];
+        
+        if (command[i] == ':')
+            useful = 1;
+
         i++;
     }
+    
+    if (useful == 1)
+        checkFirst(first);
     
     int r = 10;
     i = 0;
@@ -323,6 +338,9 @@ int checkCommand(char command[], int lineNumber)
 
     convertFunc(function);
     //checkFirst(first);
+
+    printf("%s", first);
+
     return 0;
 
 }
