@@ -21,9 +21,7 @@ This file takes in the assembly code language from an external file and converts
 
 So far: it can convert most of the necessary code to machine code.
 
-To do:  *get the program to be able to detect the variables at the bottom of the assembly language 
-        and assign the line number of the variables to the start of the lines which make use of them
-
+To do: 
         *export the machine code to an external file.
 
         *allow the user to manually enter the name of the assembly language text file
@@ -31,6 +29,10 @@ To do:  *get the program to be able to detect the variables at the bottom of the
         *input validation
 **/
 
+
+/**
+ * Adds the binary at the start of the line to link to the variable declaration at the bottom of the assembly code
+ * */
 int symbolLink(int symbolDec, int lineNum)
 {
     char *binary = convertInt(symbolDec);
@@ -41,6 +43,9 @@ int symbolLink(int symbolDec, int lineNum)
     }
 }
 
+/**
+ * Loops through all symbols and all lines the symbol is refferenced on, calling symbolLink for each.
+ * */
 int applySymbols()
 {
     Symbol *currentS = head;
