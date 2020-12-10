@@ -27,7 +27,7 @@ void printBin(char bin[], int length);
 void incrementCI(Baby* baby);
 int countChars(char filename[]);
 int countRows(char filename[]);
-int loadStore(Baby* baby);
+int loadStore(Baby* baby, char filename[]);
 void fetch(Baby* baby);
 void decode(Baby* baby);
 void execute(Baby* baby);
@@ -36,4 +36,3 @@ char* getFromStore(Baby* baby, int address);
 void setToStore(Baby* baby, int address, char data[]);
 
 #endif
-
