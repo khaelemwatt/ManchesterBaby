@@ -22,3 +22,5 @@ typedef struct symbol {
  * */
 
 char * convertInt(int num);
+
+int validFile(FILE *f);

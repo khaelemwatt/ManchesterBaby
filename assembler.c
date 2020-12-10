@@ -20,21 +20,13 @@ assembler.c
 
 This file takes in the assembly code language from an external file and converts it to machine code
 
-So far: it can convert most of the necessary code to machine code.
-
-To do: 
-        *export the machine code to an external file.
-
-        *allow the user to manually enter the name of the assembly language text file
-
-        *input validation
 **/
 
 
 /**
  * Adds the binary at the start of the line to link to the variable declaration at the bottom of the assembly code
  * */
-int symbolLink(int symbolDec, int lineNum)
+void symbolLink(int symbolDec, int lineNum)
 {
     char *binary = convertInt(symbolDec);
 
@@ -47,7 +39,7 @@ int symbolLink(int symbolDec, int lineNum)
 /**
  * Loops through all symbols and all lines the symbol is refferenced on, calling symbolLink for each.
  * */
-int applySymbols()
+void applySymbols()
 {
     Symbol *currentS = head;
     while(currentS)
@@ -65,10 +57,11 @@ int applySymbols()
 }
 
 /**
- * Function to check if the smbol exists within the symbol table
- * if it does exist it returns a pointer to the symbol
- * if id does not exist it returns null
- * 
+ * Function to check if a symbol exists within the symbol table
+ * Returns
+ *  NULL if symbol not found
+ * Parameters
+ *  char* symbol - name of the symbol to check for   
  * */
 Symbol* symbolExists(char* symbol)
 {
@@ -89,8 +82,11 @@ Symbol* symbolExists(char* symbol)
 
 /**
  * strips a string of all white space characters
+ * Returns
+ *  char array without whitespace chars
+ * Parameters
+ *  char *s - char array to remove whitespace from 
  * */
-
 char* stripWhiteSpace(char *s)
 {
     for (int i=0; i<strlen(s); i++)
@@ -106,6 +102,9 @@ char* stripWhiteSpace(char *s)
  * function to add a line to the symbol table 
  * if the symbol does not exist it also creates the symbol
  * 
+ * Parameters:
+ *  char* symbol - name of the symbol to add
+ *  int lineNUm - the number the symbol is present on 
  * */
 void addLine(char* symbol, int lineNum)
 {
@@ -153,14 +152,14 @@ void addLine(char* symbol, int lineNum)
 checkFirst(char first[])
 parameters:
 first[]: first is the first command on the line in the assembly code.
+lineNumber - the line the potentially useful symbol is on
 
 this function checks the first command on the line in the assembly code and
 uses it to see if it's useful. the only useful first commands will be the variables
 which are stated at the end of the code.
 
 **/
-
-int checkFirst(char first[], int lineNumber){
+void checkFirst(char first[], int lineNumber){
     char *ptr = strstr(first, "VAR");
 
     if (ptr)
@@ -347,11 +346,6 @@ int checkOperand(char operand[], int lineNumber){
         } 
     }
     if (isVariable == 1){
-        // for (int r = 0; r < strlen(operand); r++){
-        //     //variables[variableNum][r] = operand[r];
-        //     addLine(operand, 0);
-        // }
-        //variableNum ++;
         addLine(operand, lineNumber);
 
         return 1;
@@ -406,8 +400,6 @@ int checkCommand(char command[], int lineNumber)
         r++;
     }
 
-   //printf("%s", function);
-
     r = 14;
     i = 0;
     while(r < 22 || command[r] != ' '){
@@ -415,21 +407,19 @@ int checkCommand(char command[], int lineNumber)
         i++;
         r++;
     }
-    //printf("%s", operand);
     
     checkOperand(operand, lineNumber);
 
     convertFunc(function);
-   
 
-   
 
     return 0;
-
 }
 
 /**
  * Used to prompt the user to select an assembly file
+ * Returns 
+ *  the file selected by the user 
  * */
 FILE *filePicker()
 {
@@ -440,10 +430,20 @@ FILE *filePicker()
     scanf("%s", filePath);
     
     f = fopen(filePath, "r");
-    
     while(!f)
     {
-        printf("%s", "unable to open file, please input a correct file path or type 'quit' to quit the program\n");
+        printf("%s", "unable to open file, please input a correct file path. Type 'quit' to quit the program\n");
+        scanf("%s", filePath);
+
+        if (strncmp(filePath, "quit", FILENAME_MAX) == 0)
+            exit(0);
+        
+        f = fopen(filePath, "r");
+    }
+
+    while(validFile(f) < 1)
+    {
+        printf("%s", "The file you selected does not appear to be valid assembly code, please select another. Type 'quit' to quit the program\n");
         scanf("%s", filePath);
 
         if (strncmp(filePath, "quit", FILENAME_MAX) == 0)
@@ -455,6 +455,12 @@ FILE *filePicker()
     return f;
 }
 
+/**
+ * used to save the machine code to a file
+ * Returns: 0 if successful and 1 if not 
+ * Parameters: 
+ *  linenumber - number of lines present in the machinecode array
+ * */
 int save(int lineNumber)
 {
     FILE *f;
@@ -465,8 +471,9 @@ int save(int lineNumber)
 
     while(1)
     {
+        //check if file exists
         if( access( filePath, F_OK ) == 0 ) {
-            //clear characters input by user s
+            //clear characters input by user 
             int c;
             while((c=getchar()) != EOF && c != '\n');
 
@@ -480,7 +487,7 @@ int save(int lineNumber)
             {   
                 f = fopen(filePath, "w");
                 if (!f)
-                    return 0;
+                    return 1;
 
                 break;
 
@@ -507,30 +514,30 @@ int save(int lineNumber)
         for (int j = 0; j < 32; j++){
             fprintf(f, "%c",machineCode[i][j]);
         }
+
         if (i != (lineNumber - 1))
             fprintf(f, "%c", '\n');
     }
 
     fclose(f);
-    
+
+    return 0;
 }
 
-// main
-int main()
+/**
+ * parses comments and starts the pipeline of breaking down the assembly code 
+ * Parameters:
+ *  FILE *f - file containing assembly code
+ * */
+void parseComments(FILE *f)
 {
-    FILE *fp;
     char line[256];
-    initialiseMC();
 
- //  printMC(16);
-    fp = filePicker();
-
-    while(fgets(line, 256, fp) != NULL){
+    while(fgets(line, 256, f) != NULL){
         char command[30];
         int index = 0;
         int validLine = 0;
 
-       
         while (line[index]){
             char ch = line[index];
             
@@ -545,37 +552,66 @@ int main()
         }
         if (validLine == 1){
             checkCommand(command, lineNumber);
-            //printf(" %d \n", lineNumber);
             lineNumber ++;
         }
-        
    }
-    
-    // Symbol *current = head;
-    // while (current)
-    // {
-    //     printf("\n-----------%s----------\n", current->name);
+}
 
-    //     Line *line = current->line;
-    //     while (line)
-    //     {
-    //         printf("- %d\n", line->lineNum);
+/**
+ * Function to detect if a selected file is assembly code
+ * NOTE: does not detect syntax errors 
+ * Returns:
+ *  1 if valid
+ *  0 if not valid
+ * Parameters:
+ *  FILE *f - file selected by user 
+ * */
+int validFile(FILE *f)
+{
+    char line[256];
+    int i = 0;
 
-    //         line = line->next;
-    //     }
+    while(fgets(line, 256, f) != NULL){
+        if (strstr(line, " JMP "))
+            i++;
+        else if (strstr(line, " JRP "))
+            i++;
+        else if (strstr(line, " LDN "))
+            i++;
+        else if (strstr(line, " STO "))
+            i++;
+        else if (strstr(line, " SUB "))
+            i++;
+        else if (strstr(line, " CMP "))
+            i++;
+        else if (strstr(line, " STP "))
+            i++;
+    }
 
-    //     printf("%s %d", "declared on line :", current->declaration);
+    rewind(f);   
 
-    //     current = current->next;
-    // }
+    return i;
+}
 
+// main
+int main()
+{
+    FILE *fp;
+
+    initialiseMC();
+
+    fp = filePicker();
+    parseComments(fp);
     fclose(fp);
 
     applySymbols();
 
     printMC(lineNumber);
 
-    save(lineNumber);
+    if (save(lineNumber) != 0)
+    {
+        printf("%s", "error saving file, please try again");
+    }
 
    return 0;
 }
