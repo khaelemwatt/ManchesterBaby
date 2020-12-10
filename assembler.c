@@ -31,6 +31,33 @@ To do:  *get the program to be able to detect the variables at the bottom of the
         *input validation
 **/
 
+int symbolLink(int symbolDec, int lineNum)
+{
+    char *binary = convertInt(symbolDec);
+
+    for (int i=0; i<12; i++)
+    {
+        machineCode[lineNum][i] = binary[i];
+    }
+}
+
+int applySymbols()
+{
+    Symbol *currentS = head;
+    while(currentS)
+    {
+        Line *currentLine = currentS->line;
+        while(currentLine)
+        {
+            symbolLink(currentS->declaration, currentLine->lineNum);
+
+            currentLine = currentLine->next;
+        }
+
+        currentS = currentS->next;
+    }
+}
+
 /**
  * Function to check if the smbol exists within the symbol table
  * if it does exist it returns a pointer to the symbol
@@ -149,7 +176,7 @@ int checkFirst(char first[], int lineNumber){
 
         varName[i] = 0;
 
-        printf("%s\n", varName);
+        //printf("%s\n", varName);
 
         Symbol *s;
 
@@ -434,26 +461,29 @@ int main()
         
    }
     
-    Symbol *current = head;
-    while (current)
-    {
-        printf("\n-----------%s----------\n", current->name);
+    // Symbol *current = head;
+    // while (current)
+    // {
+    //     printf("\n-----------%s----------\n", current->name);
 
-        Line *line = current->line;
-        while (line)
-        {
-            printf("- %d\n", line->lineNum);
+    //     Line *line = current->line;
+    //     while (line)
+    //     {
+    //         printf("- %d\n", line->lineNum);
 
-            line = line->next;
-        }
+    //         line = line->next;
+    //     }
 
-        printf("%s %d", "declared on line :", current->declaration);
+    //     printf("%s %d", "declared on line :", current->declaration);
 
-        current = current->next;
-    }
+    //     current = current->next;
+    // }
 
     fclose(fp);
-   //printMC(lineNumber);
+
+    applySymbols();
+
+    printMC(lineNumber);
 
    return 0;
 }

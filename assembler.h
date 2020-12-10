@@ -16,3 +16,9 @@ typedef struct symbol {
 	Line *line;
 	struct symbol *next;
 } Symbol;
+
+/**
+ * function declerations
+ * */
+
+char * convertInt(int num);
