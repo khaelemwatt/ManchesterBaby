@@ -44,15 +44,21 @@ void applySymbols()
     Symbol *currentS = head;
     while(currentS)
     {
+        Symbol *tmpS = currentS;
         Line *currentLine = currentS->line;
+
         while(currentLine)
         {
+            Line *tmpL = currentLine;
+
             symbolLink(currentS->declaration, currentLine->lineNum);
 
             currentLine = currentLine->next;
+            free(tmpL);
         }
 
         currentS = currentS->next;
+        free(tmpS);
     }
 }
 
