@@ -14,19 +14,26 @@ typedef struct baby {
 	char store[NUMBEROFADDRESSES][MEMSIZE];
 	char addressBus[ADDRESSBUSSIZE];
 	char controlBus[CONTROLBUSSIZE];
+	int halt;
+	int opcode;
+	int operand;
+
 }Baby;
 
 Baby* createBaby();
 int binToDec(char bin[], int length);
 void decToBin(int dec, char bin[]);
 void printBin(char bin[], int length);
-void incrementCI();
+void incrementCI(Baby* baby);
 int countChars(char filename[]);
 int countRows(char filename[]);
-Baby* loadStore();
-Baby* fetch();
-void decode();
-void execute();
-void displayBaby();
+int loadStore(Baby* baby);
+void fetch(Baby* baby);
+void decode(Baby* baby);
+void execute(Baby* baby);
+void displayBaby(Baby* baby);
+char* getFromStore(Baby* baby, int address);
+void setToStore(Baby* baby, int address, char data[]);
 
 #endif
+
