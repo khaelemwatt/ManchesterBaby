@@ -146,16 +146,15 @@ int countChars(char filename[]){
 
 }
 
-int loadStore(Baby* baby){
+int loadStore(Baby* baby, char filename[]){
 
-	char filename[] ="BabyTestMC.txt";
 
     FILE *fp;
     fp = fopen(filename, "r");
 
     if(!fp){
         printf("File %s does not exist or you dont have access permissions\n", filename);
-        return 0;;
+        return 0;
     }
     fclose(fp);
 
@@ -167,14 +166,16 @@ int loadStore(Baby* baby){
         columns = numChars/rows;
     }else{
         printf("Invalid file format. Please have equal column size for each row\n");
-        return 0;;
+        return 0;
     }
 
     if(columns != NUMBEROFADDRESSES){
         printf("Invalid file format. Lines must be %d bits \n", NUMBEROFADDRESSES);
+        return 0;
     }
     if(rows > MEMSIZE){
         printf("Invalid file format. Maximum of %d lines", MEMSIZE);
+        return 0;
     }
 
     fp = fopen(filename, "r");
@@ -201,6 +202,7 @@ int loadStore(Baby* baby){
         
     }else{
         printf("File %s not found!\n", filename);
+        return 0;
     }
 
     return 1;
@@ -310,8 +312,15 @@ int main(){ //Main loop for the fetch decode execute cycle
 
     Baby* baby = NULL;
     baby = createBaby();
+    
+    int valid = 0;
+    char filename[50];
 
-    loadStore(baby);
+    while (valid == 0){
+        printf("Enter filename: ");
+        scanf("%s", filename);
+        valid = loadStore(baby, filename);
+    }
 
     while(baby->halt==0){
     	incrementCI(baby);
