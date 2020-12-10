@@ -455,7 +455,7 @@ FILE *filePicker()
     return f;
 }
 
-int save()
+int save(int lineNumber)
 {
     FILE *f;
     char filePath[FILENAME_MAX];
@@ -477,8 +477,11 @@ int save()
            
 
             if (choice == 'y')
-            {
+            {   
                 f = fopen(filePath, "w");
+                if (!f)
+                    return 0;
+
                 break;
 
             } else if (choice == 'n')
@@ -493,11 +496,23 @@ int save()
             
         } else {
             f = fopen(filePath, "w");
+            if (!f)
+                return 1;
             break;
         }
     }
 
-    printf("%s", filePath);
+   
+    for (int i = 0; i < lineNumber; i++){
+        for (int j = 0; j < 32; j++){
+            fprintf(f, "%c",machineCode[i][j]);
+        }
+        if (i != (lineNumber - 1))
+            fprintf(f, "%c", '\n');
+    }
+
+    fclose(f);
+    
 }
 
 // main
@@ -560,7 +575,7 @@ int main()
 
     printMC(lineNumber);
 
-    save();
+    save(lineNumber);
 
    return 0;
 }
