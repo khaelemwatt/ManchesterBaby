@@ -426,6 +426,33 @@ int checkCommand(char command[], int lineNumber)
 
 }
 
+/**
+ * Used to prompt the user to select an assembly file
+ * */
+FILE *filePicker()
+{
+    FILE *f;
+    char filePath[FILENAME_MAX];
+
+    printf("%s", "please enter the path to the assembly file:\n");
+    scanf("%s", filePath);
+    
+    f = fopen(filePath, "r");
+    
+    while(!f)
+    {
+        printf("%s", "unable to open file, please input a correct file path or type 'quit' to quit the program\n");
+        scanf("%s", filePath);
+
+        if (strncmp(filePath, "quit", FILENAME_MAX) == 0)
+            exit(0);
+        
+        f = fopen(filePath, "r");
+    }
+
+    return f;
+}
+
 // main
 int main()
 {
@@ -434,11 +461,7 @@ int main()
     initialiseMC();
 
  //  printMC(16);
-    fp = fopen("BabyTestAssembler.txt","r");
-    if( fp == NULL ){
-        printf("\nCan not open the file.");
-        exit(0);
-    }
+    fp = filePicker();
 
     while(fgets(line, 256, fp) != NULL){
         char command[30];
