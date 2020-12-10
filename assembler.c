@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>
 #include "assembler.h"
 
 // global variables:
@@ -233,6 +234,7 @@ this function prints the machine code 2D array
 
 **/
 int printMC(int lines){
+    printf("\n");
     for (int i = 0; i < lines; i++){
         for (int j = 0; j < 32; j++){
             printf("%c",machineCode[i][j]);
@@ -453,6 +455,51 @@ FILE *filePicker()
     return f;
 }
 
+int save()
+{
+    FILE *f;
+    char filePath[FILENAME_MAX];
+
+    printf("%s", "please enter the path to save the machine code to (including file name):\n");
+    scanf("%s", filePath);
+
+    while(1)
+    {
+        if( access( filePath, F_OK ) == 0 ) {
+            //clear characters input by user s
+            int c;
+            while((c=getchar()) != EOF && c != '\n');
+
+            char choice;
+
+            printf("the file name you entered already exists, would you like to overwrite? [y/n]");
+            scanf(" %c", &choice);
+           
+
+            if (choice == 'y')
+            {
+                f = fopen(filePath, "w");
+                break;
+
+            } else if (choice == 'n')
+            {
+                printf("%s", "please enter the path to save the machine code to (including file name):\n");
+                scanf("%s", filePath);
+                continue;
+            } else
+            {
+                choice = 0;
+            }
+            
+        } else {
+            f = fopen(filePath, "w");
+            break;
+        }
+    }
+
+    printf("%s", filePath);
+}
+
 // main
 int main()
 {
@@ -512,6 +559,8 @@ int main()
     applySymbols();
 
     printMC(lineNumber);
+
+    save();
 
    return 0;
 }
