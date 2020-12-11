@@ -1,2 +1,7 @@
-main: simulator.c header.h
-	gcc -o main simulator.c header.h -Wall -Werror -Wextra -pedantic -lm
+all:simulator assembler
+
+simulator: simulator.c
+	gcc -o simulator simulator.c -Wall -Werror -Wextra -pedantic -lm -g
+
+assembler: assembler.c
+	gcc -o assembler assembler.c -Wall -Werror -Wextra -pedantic -lm -g
