@@ -344,8 +344,5 @@ int main(){ //Main loop for the fetch decode execute cycle
 		displayBaby(baby);
     }
 
-    system("clear");
-    prinf
-
     free(baby);
 }
