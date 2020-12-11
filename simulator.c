@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <time.h>
 #include "header.h"
 
 Baby* createBaby(){
@@ -16,6 +17,7 @@ Baby* createBaby(){
     	pBaby->accumulator[i] = '0';
     	pBaby->controlInstruction[i] = '0';
     	pBaby->presentInstruction[i] = '0';
+        pBaby->lineFromStore[i] = '0';
     }
     for(int i=0; i<ADDRESSBUSSIZE; i++){
     	pBaby->addressBus[i] ='0';
@@ -32,6 +34,8 @@ Baby* createBaby(){
     pBaby->halt = 0;
     pBaby->opcode = 0;
     pBaby->opcode = 0;
+
+
 
     return pBaby;
 }
@@ -59,19 +63,23 @@ int binToDec(char bin[], int length){
 	return decimal;
 }
 
-void decToBin(int dec, char bin[]){
-	//Takes a decimal and a char array for the values to be copied into and returns the binary string
+void decToBin(int dec, char bin[MEMSIZE]){
+	//Takes a decimal and a char array for the values to be copied into
 	int remainder;
 	int temp = dec;
-	int i=0;
+    for(int i=0;i<MEMSIZE;i++){
+        bin[i] = '0';
+    }
+
+	int j=0;
 	if(dec<0)
 		dec=dec*-1;
 
 	while(dec>0){
 		remainder = dec % 2;
 		dec = dec / 2;
-		bin[i] = remainder + '0';
-		i++;
+		bin[j] = remainder + '0';
+		j++;
 	}
 	if(temp<0){
 		bin[MEMSIZE-1] = '1';
@@ -146,16 +154,15 @@ int countChars(char filename[]){
 
 }
 
-int loadStore(Baby* baby){
+int loadStore(Baby* baby, char filename[]){
 
-	char filename[] ="BabyTestMC.txt";
 
     FILE *fp;
     fp = fopen(filename, "r");
 
     if(!fp){
         printf("File %s does not exist or you dont have access permissions\n", filename);
-        return 0;;
+        return 0;
     }
     fclose(fp);
 
@@ -167,14 +174,16 @@ int loadStore(Baby* baby){
         columns = numChars/rows;
     }else{
         printf("Invalid file format. Please have equal column size for each row\n");
-        return 0;;
+        return 0;
     }
 
     if(columns != NUMBEROFADDRESSES){
         printf("Invalid file format. Lines must be %d bits \n", NUMBEROFADDRESSES);
+        return 0;
     }
     if(rows > MEMSIZE){
         printf("Invalid file format. Maximum of %d lines", MEMSIZE);
+        return 0;
     }
 
     fp = fopen(filename, "r");
@@ -193,7 +202,7 @@ int loadStore(Baby* baby){
 
             i++;
             if (i==(rows)){
-            	break;
+                break;
             }
         }
         
@@ -201,6 +210,7 @@ int loadStore(Baby* baby){
         
     }else{
         printf("File %s not found!\n", filename);
+        return 0;
     }
 
     return 1;
@@ -212,7 +222,7 @@ void fetch(Baby* baby){
 	//CI tells you the line in store to fetch
 	//copy this line in store into the PI
 	int line = binToDec(baby->controlInstruction, MEMSIZE);
-	for (int i = 0; i < NUMBEROFADDRESSES; i++) {
+	for (int i = 0; i < MEMSIZE; i++) {
 		baby->presentInstruction[i] = baby->store[line][i];
 	}	
 }
@@ -292,11 +302,10 @@ void displayBaby(Baby* baby){
 
 char* getFromStore(Baby* baby, int address){
 	//Prevents the need for for loops in cdde when loading contents of store
-	char *data = malloc(MEMSIZE);
 	for(int i=0;i<MEMSIZE;i++){
-		data[i] = baby->store[address][i];
+		baby->lineFromStore[i] = baby->store[address][i];
 	}
-	return data;
+	return baby->lineFromStore;
 }
 
 void setToStore(Baby* baby, int address, char data[]){
@@ -306,20 +315,37 @@ void setToStore(Baby* baby, int address, char data[]){
 	}
 }
 
+void waitFor(unsigned int seconds){
+    unsigned int finish = time(0) + seconds;
+    while(time(0)<finish);
+}
+
 int main(){ //Main loop for the fetch decode execute cycle
 
     Baby* baby = NULL;
     baby = createBaby();
 
-    loadStore(baby);
+    int valid = 0;
+    char filename[50];
+
+    while (valid == 0){
+        printf("Enter filename: ");
+        scanf("%s", filename);
+        valid = loadStore(baby, filename);
+    }
 
     while(baby->halt==0){
     	incrementCI(baby);
 		fetch(baby);
 		decode(baby);
 		execute(baby);
+        waitFor(1);
+        system("clear");
 		displayBaby(baby);
     }
+
+    system("clear");
+    prinf
 
     free(baby);
 }
