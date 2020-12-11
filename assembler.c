@@ -1,18 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <unistd.h>
 #include "assembler.h"
 
-// global variables:
-//char variables[16][16];   // this is a 2D array which contains all the variables referenced throughout the file
-                          // you may want to use a different approach but this is what I tried
-
 char machineCode[32][32]; // this is the 2D array which will be exported to the external file
-int variableNum = 0;    // this is the number which 
 int lineNumber = 0; // the current useable line of the assembly language
-
 Symbol *head; //head of symbol table 
 
 /**
@@ -37,7 +26,7 @@ void symbolLink(int symbolDec, int lineNum)
 }
 
 /**
- * Loops through all symbols and all lines the symbol is refferenced on, calling symbolLink for each.
+ * Loops through all symbols and all lines the symbol is referenced on, calling symbolLink for each.
  * */
 void applySymbols()
 {
@@ -75,7 +64,7 @@ Symbol* symbolExists(char* symbol)
         return NULL;
 
     Symbol *current = head;
-    while (current)
+    while (current!=NULL)
     {
         if (strncmp(symbol, current->name, 50) == 0)
             return current;
@@ -129,12 +118,13 @@ void addLine(char* symbol, int lineNum)
     Symbol *s; 
     Line *l;
 
-   // int exists = 1;
+    int exists = 1;
 
     symbol = stripWhiteSpace(symbol);
 
     //initialise line struct
     l = (Line*)malloc(sizeof(Line));
+    l->next = NULL;
     l->lineNum = lineNum;
 
     //check if symbol exists 
@@ -143,11 +133,12 @@ void addLine(char* symbol, int lineNum)
     //if symbol doesnt exist, initialise a new sybol
     if (!s)
     {   
-     //   exists = 0;
+        exists = 0;
         s = (Symbol*)malloc(sizeof(Symbol));
+        s->next=NULL;
     }
 
-    //if symbol already contains a line 
+    //if symbol already cp ontains a line 
     if (s->line)
     {
         l->next = s->line;
@@ -157,12 +148,14 @@ void addLine(char* symbol, int lineNum)
     
     strncpy(s->name, symbol, 50);
 
-    if (head && s != head)
-    {
+    if(exists==0){
+        if (head && s!= head)
+    {   
         s->next = head;
         head = s;
     } else if (!head)
         head = s;
+    }
     
 }
 
@@ -417,10 +410,9 @@ and breaks it up into the appropriate sections for use.
 **/
 int checkCommand(char command[], int lineNumber)  
 {
-    char first[32];
-    char operand[8];
-    char function[32];
-
+    char first[32] = {' '};
+    int operandLen = 0;
+    int functionLen = 3;
     int useful = 0;
 
     int i = 0;      
@@ -438,7 +430,9 @@ int checkCommand(char command[], int lineNumber)
     
     int r = 10;
     i = 0;
-    while(r < 13 || command[r] != ' ' ){
+    char* function = (char*)malloc(sizeof(char)*functionLen);
+    memset(function, 0, strlen(function));
+    while(r < 13 && command[r] != ' ' ){
         function[i] = command[r];
         i++;
         r++;
@@ -446,16 +440,30 @@ int checkCommand(char command[], int lineNumber)
 
     r = 14;
     i = 0;
-    while(r < 22 || command[r] != ' '){
+    while(r < 22){
+        if(command[r]!=' ' && command[r]!='\t')
+            operandLen++;
+        if(command[r]=='\t'){
+            i+=3;
+            r+=3;
+        }
+        i++;
+        r++;
+    }
+    r=14;
+    i=0;
+    char* operand = (char*)malloc(sizeof(char)*operandLen);
+    while(i<operandLen){
         operand[i] = command[r];
         i++;
         r++;
     }
-    
     checkOperand(operand, lineNumber);
 
     convertFunc(function);
 
+    free(function);
+    free(operand);
 
     return 0;
 }
@@ -575,22 +583,17 @@ int save(int lineNumber)
  * */
 void parseComments(FILE *f)
 {
-    char line[256];
+    char* line = (char*)malloc(sizeof(char)*256);
 
     while(fgets(line, 256, f) != NULL){
-        char command[30];
+        char* command = (char*)malloc(sizeof(char)*30);
         int index = 0;
         int validLine = 0;
 
-        while (line[index]){
+        while (line[index]!='\n'){
             char ch = line[index];
-
-            if (line[index] == ';' || line[index] == '\n'){
-                for (int i=index; i<30; i++)
-                {
-                    command[i] = '\000';
-                }
-
+            
+            if (line[index] == ';'){
                 break;
             }
             else{
@@ -599,35 +602,15 @@ void parseComments(FILE *f)
             }
             index ++;
         }
-
-        for (int i=0; i<30; i++)
-        {
-            char tmp[30];
-            strncpy(tmp, command, 30);
-
-            if (command[i] == '\t')
-            {
-                for (int z =0; z<30; z++)
-                {
-                    tmp[z+3] = command[z];
-                }
-                
-                tmp[i] = ' ';
-                tmp[i+1] = ' ';
-                tmp[i+2] = ' ';
-                tmp[i+3] = ' ';
-
-                strncpy(command, tmp, 30);
-            }
-        }
-
         if (validLine == 1){
             checkCommand(command, lineNumber);
             lineNumber ++;
         }
-
-       
+        memset(command, 0, strlen(command));
+        free(command);
+        memset(line, 0, strlen(line));
    }
+   free(line);
 }
 
 /**
