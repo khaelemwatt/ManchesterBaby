@@ -95,7 +95,7 @@ Symbol* symbolExists(char* symbol)
  * */
 char* stripWhiteSpace(char *s)
 {
-    for (int i=0; i<strlen(s); i++)
+    for (size_t i=0; i<strlen(s); i++)
     {
         if (s[i] == ' ')
             s[i] = 0;
@@ -104,6 +104,18 @@ char* stripWhiteSpace(char *s)
     return s;
 }
 
+char* stripNewLine(char *s)
+{
+    for (size_t i=0; i<strlen(s); i++)
+    {
+        if (s[i] == '\n')
+            s[i] = 0;
+        else if ( s[i] == '\t')
+            s[i] = 0;
+    }
+    
+    return s;
+}
 /**
  * function to add a line to the symbol table 
  * if the symbol does not exist it also creates the symbol
@@ -117,7 +129,7 @@ void addLine(char* symbol, int lineNum)
     Symbol *s; 
     Line *l;
 
-    int exists = 1;
+   // int exists = 1;
 
     symbol = stripWhiteSpace(symbol);
 
@@ -131,7 +143,7 @@ void addLine(char* symbol, int lineNum)
     //if symbol doesnt exist, initialise a new sybol
     if (!s)
     {   
-        exists = 0;
+     //   exists = 0;
         s = (Symbol*)malloc(sizeof(Symbol));
     }
 
@@ -238,7 +250,7 @@ lines: the number of lines of the machine code you wish to print.
 this function prints the machine code 2D array
 
 **/
-int printMC(int lines){
+void printMC(int lines){
     printf("\n");
     for (int i = 0; i < lines; i++){
         for (int j = 0; j < 32; j++){
@@ -258,8 +270,8 @@ function[]: function is the command in the assembler file that performs the acti
 this function converts these functions and converts them to the appropriate 3 digit 
 binary number for outputting to file.
 **/
-int convertFunc(char function[]){
-    char funcBinary[4];
+void convertFunc(char function[]){
+    //char funcBinary[4];
     if (strcmp("JMP", function) == 0){
         machineCode[lineNumber][13] = '0';
         machineCode[lineNumber][14] = '0';
@@ -303,7 +315,8 @@ int convertFunc(char function[]){
         
     }
     else{
-        printf("UNKNOWN FUNCTION ENTERED!");
+        printf("%s %s\n", "UNKNOWN FUNCTION ENTERED!", function);
+        
     }
 }
 
@@ -334,6 +347,30 @@ char * convertInt(int num){
 }
 
 /**
+ * checks if a character array countains any number
+ * used to prevent operations with no operands from being classified as a variable
+ * Returns:
+ *  0 if no numbers
+ *  1 if numbers
+ * Parameters:
+ *  char *operand - string to check for numbers in
+ * */
+int containsNum(char *operand)
+{
+    int z=0;
+
+    for (size_t i=0; i<strlen(operand); i++)
+    {
+        if (isdigit(operand[i]) > 0)
+        {
+            z++;
+        }
+    }
+
+    return z;
+}
+
+/**
 checkOperand(char operand[])
 parameters:
 operand[]: operand is the command on the line which the function is being performed on.
@@ -345,7 +382,7 @@ operand is a variable.
 **/
 int checkOperand(char operand[], int lineNumber){
     int isVariable = 0;
-    for (int i = 0; i < strlen(operand); i++){
+    for (size_t i = 0; i < strlen(operand); i++){
         if (isalpha(operand[i])) {
             isVariable = 1;
             break;
@@ -356,7 +393,7 @@ int checkOperand(char operand[], int lineNumber){
 
         return 1;
     }
-    else{
+    else if (containsNum(operand) > 0){
         int decimal;
         sscanf(operand, "%d", &decimal);
         char * binaryNum = convertInt(decimal);
@@ -366,6 +403,7 @@ int checkOperand(char operand[], int lineNumber){
         return 0;
     }
 
+    return 0;
 }
 
 
@@ -546,8 +584,13 @@ void parseComments(FILE *f)
 
         while (line[index]){
             char ch = line[index];
-            
-            if (line[index] == ';'){
+
+            if (line[index] == ';' || line[index] == '\n'){
+                for (int i=index; i<30; i++)
+                {
+                    command[i] = '\000';
+                }
+
                 break;
             }
             else{
@@ -556,10 +599,34 @@ void parseComments(FILE *f)
             }
             index ++;
         }
+
+        for (int i=0; i<30; i++)
+        {
+            char tmp[30];
+            strncpy(tmp, command, 30);
+
+            if (command[i] == '\t')
+            {
+                for (int z =0; z<30; z++)
+                {
+                    tmp[z+3] = command[z];
+                }
+                
+                tmp[i] = ' ';
+                tmp[i+1] = ' ';
+                tmp[i+2] = ' ';
+                tmp[i+3] = ' ';
+
+                strncpy(command, tmp, 30);
+            }
+        }
+
         if (validLine == 1){
             checkCommand(command, lineNumber);
             lineNumber ++;
         }
+
+       
    }
 }
 
